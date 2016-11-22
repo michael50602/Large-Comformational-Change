@@ -42,7 +42,7 @@ def cal_profile(prop, seq_cont, window, stride):
     return output
 
 
-def run():
+def profile_parsing():
     feature_table = open('data/feature.csv', 'r')
     AA_property = []
     for row in csv.reader(feature_table):
@@ -64,10 +64,14 @@ def run():
     src_file = open('data/all804-prot.fa', 'r')
     re_result = re.finditer(r">(?P<sequence_id>[0-9A-Z]*)\n(?P<sequence_content>[A-Z\n]*)\n", src_file.read())
     parse_output = {}
+    total_len = 0
+    cnt = 0
     for m in re_result:
         parse_output[m.groupdict()['sequence_id']] = {}
+        total_len += len(m.groupdict()['sequence_content'])
+        cnt += 1
         for prop in property_list:
             parse_output[m.groupdict()['sequence_id']][prop] = cal_profile(prop, m.groupdict()['sequence_content'], 5, 1)
-    return
+    return parse_output
 if __name__ == '__main__':
     run()
