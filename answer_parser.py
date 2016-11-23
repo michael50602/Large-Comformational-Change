@@ -8,4 +8,12 @@ def answer_parsing():
     return answer
 
 if __name__ == '__main__':
-    answer_parsing()
+    ans = answer_parsing()
+    neg = 0
+    pos = 0
+    for v in ans.values():
+        if v == 1:
+            pos += 1
+        else:
+            neg += 1
+    print "negative sample is %d, positive sample is %d"%(neg, pos)

@@ -74,4 +74,4 @@ def profile_parsing():
             parse_output[m.groupdict()['sequence_id']][prop] = cal_profile(prop, m.groupdict()['sequence_content'], 5, 1)
     return parse_output
 if __name__ == '__main__':
-    run()
+    print profile_parsing().values()[0].keys()
