@@ -9,6 +9,7 @@ def answer_parsing():
 
 if __name__ == '__main__':
     ans = answer_parsing()
+    print(ans.keys()) 
     neg = 0
     pos = 0
     for v in ans.values():
@@ -16,4 +17,4 @@ if __name__ == '__main__':
             pos += 1
         else:
             neg += 1
-    print "negative sample is %d, positive sample is %d"%(neg, pos)
+    print ("negative sample is %d, positive sample is %d"%(neg, pos))

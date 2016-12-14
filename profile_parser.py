@@ -38,7 +38,7 @@ def cal_profile(prop, seq_cont, window, stride):
                     continue
             output.append(tmp)
     else:
-        print "can't recognize property type"
+        print ("can't recognize property type")
     return output
 
 
@@ -74,4 +74,6 @@ def profile_parsing():
             parse_output[m.groupdict()['sequence_id']][prop] = cal_profile(prop, m.groupdict()['sequence_content'], 5, 1)
     return parse_output 
 if __name__ == '__main__':
-    print profile_parsing().values()[0].keys()
+    result = profile_parsing()
+    for v in result.values():
+      print (v)
