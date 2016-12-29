@@ -56,15 +56,15 @@ f_length = feature_max_length(['molecular_weight', 'carboxyl', 'cyclic_structure
 x_data ,y_data  = fill_mx(max(f_length), ['molecular_weight', 'carboxyl', 'cyclic_structure'], protein_prop, ans.keys())
 
 # Parameters
-learning_rate = 0.01
-training_iters = 300000
+learning_rate = 0.001
+training_iters = 10000
 batch_size = 940
 display_step = 10
 
 # Network Parameters
 n_input = 3
 sequence_len = int(max(f_length) / 50) + 1 # timesteps
-n_hidden = 256 # hidden layer num of features
+n_hidden = 128 # hidden layer num of features
 n_classes = 2
 # tf Graph input
 x = tf.placeholder("float", [None, sequence_len, n_input])
@@ -103,13 +103,11 @@ def RNN(x, weights, biases):
 pred = RNN(x, weights, biases)
 y_pred = tf.argmax(pred, 1)
 y_true = tf.argmax(y, 1)
-penal_matrix = tf.constant([0.0, 0.0, 0.0, 1.0], shape=[2,2])
-# Define loss and optimizer
-#cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(tf.matmul(pred, penal_matrix), y))
-cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 # Evaluate model
 accuracy, recall, precision, f1_score = confusion_matrix.tf_confusion_matrix(pred, y_true)
+# Define loss and optimizer
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 # Initializing the variables
 init = tf.initialize_all_variables()
 # Launch the graph
@@ -122,21 +120,27 @@ with tf.Session() as sess:
         sess.run(optimizer, feed_dict={x: x_data, y: y_data})
         if step % display_step == 0:
             # Calculate batch accuracy
-            acc = sess.run(accuracy, feed_dict={x: x_data, y: y_data})
-            labels = sess.run(tf.matmul(pred, penal_matrix), feed_dict={x:x_data, y:y_data})
+            acc, f_measure = sess.run([accuracy,f1_score], feed_dict={x: x_data, y: y_data})
             # Calculate batch loss
             loss = sess.run(cost, feed_dict={x: x_data, y: y_data})
             print("Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
                   "{:.6f}".format(loss) + ", Training Accuracy= " + \
                   "{:.5f}".format(acc))
-            print([label for label in labels if label[1] <= 0])
         step += 1
     print("Optimization Finished!")
-
-    acc, f = sess.run([accuracy, f1_score], feed_dict={x: x_data, y: y_data})
-    print("Training => Training Accuracy = {0}, f-measure = {1}".format(acc, f))
+ 
+    accu, prediction, true_y = sess.run([accuracy, y_pred, y_true], feed_dict={x:x_data, y:y_data})
+    print('Accuracy: ' + str(accu))
+    print(type(accu))
+    print('Precision: ' + str(metrics.precision_score(true_y, prediction)))
+    print(type(metrics.precision_score(true_y, prediction)))
+    print("Recall: " + str(metrics.recall_score(true_y, prediction)))
+    print(type(metrics.recall_score(true_y, prediction)))
+    print("f1_score: " + str(metrics.f1_score(true_y, prediction)))
+    print(type(metrics.f1_score(true_y, prediction)))
+    # Validation
     result = sess.run(tf.argmax(pred,1), feed_dict={x:test_x})
-    output_file = open('./test-output2', 'w')
+    output_file = open('./test-output', 'w')
     for i, entity in enumerate(result):
         if entity == 0:
             result[i] = -1
